@@ -22,10 +22,54 @@ use std::{
 
 mod ffi;
 
-
 pub struct Scm {
     n: ffi::SCM
 }
+
+impl PartialEq for Scm {
+    fn eq(&self, other: &Scm) -> bool {
+        self.equal(*other)
+    }
+}
+
+impl PartialOrd for Scm {
+    fn partial_cmp(&self, other: &Scm) -> Option<Ordering> {
+        if *self < *other  {
+            Some(Less)
+        } else if *self > *other {
+            Some(Greater)
+        } else if *self == *other {
+            Some(Equal)
+        } else {
+            None
+        }
+    }
+    fn lt(&self, other: &Scm) -> bool {
+        self.less(*other)
+    }
+    fn le(&self, other: &Scm) -> bool {
+        self.less_or_equal(*other)
+    }
+    fn gt(&self, other: &Scm) -> bool {
+        self.greater(*other)
+    }
+    fn ge(&self, other: &Scm) -> bool {
+        self.greater_or_equal(*other)
+    }
+}
+
+/*impl Ord for Scm {
+    fn cmp(&self, other: &Scm) -> Ordering {
+        let truth = ffi::scm_from_int8(1);
+        if truth == ffi::scm_gr_p(self.n, other.n) {
+            Greater
+        } else if truth == ffi::scm_less_p(self.n, other.n) {
+            Less
+        } else {
+            Equal
+        }
+    }
+}*/
 
 impl ToPrimitive for Scm {
     fn to_i64(&self) -> Option<i64> {
@@ -180,9 +224,9 @@ impl Scm {
         }
     }
 
-    pub fn to_int32(&self) -> i32{
+    pub fn is_true(&self) -> bool {
         unsafe {
-            scm_to_int32(self.n)
+            ffi::scm_from_int8(1) == self.n
         }
     }
 
@@ -192,11 +236,6 @@ impl Scm {
             let len = s.len();
             Scm::new(ffi::scm_call_n(
                 self.n, s.as_mut_slice(), len as u64))
-        }
-    }
-    pub fn from_int32(num: i32) -> Scm {
-        unsafe {
-            Scm::new(ffi::scm_from_int32(num))
         }
     }
     pub fn c_lookup(s: &str) -> Scm {
@@ -209,6 +248,35 @@ impl Scm {
             Scm::new(ffi::scm_variable_ref(self.n))
         }
     }
+
+    // equality
+
+    fn equal(&self, x: Scm) -> bool {
+        unsafe {
+            Scm::new(ffi::scm_num_eq_p(self.n, x.n)).is_true()
+        }
+    }
+    fn less(&self, x: Scm) -> bool {
+        unsafe {
+            Scm::new(ffi::scm_less_p(self.n, x.n)).is_true()
+        }
+    }
+    fn greater(&self, x: Scm) -> bool {
+        unsafe {
+            Scm::new(ffi::scm_gr_p(self.n, x.n)).is_true()
+        }
+    }
+    fn less_or_equal(&self, x: Scm) -> bool {
+        unsafe {
+            Scm::new(ffi::scm_leq_p(self.n, x.n)).is_true()
+        }
+    }
+    fn greater_or_equal(&self, x: Scm) -> bool {
+        unsafe {
+            Scm::new(ffi::scm_geq_p(self.n, x.n)).is_true()
+        }
+    }
+
 }
 
 pub fn init() {
