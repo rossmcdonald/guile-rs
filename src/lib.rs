@@ -186,7 +186,7 @@ impl Scm {
         }
     }
 
-    pub fn call<T: ToScm>(&self, args: Vec<T>) -> Scm {
+    pub fn call(&self, args: Vec<Box<ToScm>>) -> Scm {
         let mut s: Vec<SCM> = args.iter().map(|x| x.to_scm().n).collect();
         unsafe {
             let len = s.len();
