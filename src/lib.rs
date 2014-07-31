@@ -5,9 +5,9 @@
 extern crate libc;
 
 use ffi::*;
-use conversion::*;
 
 use std::ptr;
+
 use std::{
     i64,
     i32,
@@ -21,7 +21,6 @@ use std::{
 };
 
 mod ffi;
-mod conversion;
 
 
 pub struct Scm {
