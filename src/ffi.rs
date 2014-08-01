@@ -1,8 +1,8 @@
 use libc::*;
 
 //enum __scm_opaque {} pub type SCM = *const __scm_opaque;
-struct N {
-    n: uintptr_t,
+pub struct N {
+    pub n: uintptr_t,
 }
 
 impl PartialEq for N {
@@ -12,7 +12,7 @@ impl PartialEq for N {
 }
 
 pub struct SCM {
-    n: N,
+    pub n: N,
 }
 
 impl PartialEq for SCM {
@@ -32,7 +32,7 @@ extern {
 
     // calling function
     pub fn scm_call_n(func: SCM, args: &mut [SCM], nargs: size_t) -> SCM;
-    pub fn scm_call(func: SCM, ...) -> SCM;
+    //pub fn scm_call(func: SCM, ...) -> SCM;
 
     // number to object conversion
     pub fn scm_from_int8(x: int8_t) -> SCM;
@@ -55,7 +55,7 @@ extern {
     pub fn scm_to_int64(x: SCM) -> i64;
     pub fn scm_to_uint64(x: SCM) -> u64;
     pub fn scm_to_double(x: SCM) -> f32;
-    pub fn scm_to_bool(x: SCM) -> int;
+    pub fn scm_to_bool(x: SCM) -> c_int;
 
     // comparison functions
     //pub fn scm_i_num_less_p(x: SCM, y: SCM, z: SCM) -> SCM;
