@@ -26,6 +26,7 @@ impl PartialEq for SCM {
 extern {
     // setup functions
     pub fn scm_init_guile() -> ();
+    pub fn scm_shell(argc: c_uint, argv: *const *const c_char) -> ();
     pub fn scm_c_primitive_load(str: *const c_char) -> ();
     pub fn scm_variable_ref(var: SCM) -> SCM;
     pub fn scm_c_lookup(str: *const c_char) -> SCM;
@@ -67,6 +68,7 @@ extern {
     pub fn scm_zero_p(z: SCM) -> SCM;
     pub fn scm_positive_p(x: SCM) -> SCM;
     pub fn scm_negative_p(x: SCM) -> SCM;
-    //pub fn scm_is_true(x: SCM) -> bool;
 
+    // arithmetic operations
+    pub fn scm_sum(x: SCM, y: SCM) -> SCM;
 }

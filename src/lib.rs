@@ -9,7 +9,9 @@ use ffi::*;
 
 
 use std::num::Bounded;
-
+use std::c_str::CString;
+use std::ptr;
+use std::ops::Fn;
 mod ffi;
 
 pub static SCM_T: Scm = Scm {
@@ -291,7 +293,7 @@ impl Scm {
         min.to_scm() <= *self && *self <= max.to_scm()
     }
 
-    fn is_true(&self) -> bool {
+    pub fn is_true(&self) -> bool {
         let a: uint = 260;
         let b: uint = 4;
         !((self.n.n.n & !(a ^ b)) == (a & b))
@@ -313,6 +315,12 @@ impl Scm {
     pub fn variable_ref(&self) -> Scm {
         unsafe {
             Scm::new(ffi::scm_variable_ref(self.n))
+        }
+    }
+
+    pub fn add(&self, x: Scm) -> Scm {
+        unsafe {
+            Scm::new(ffi::scm_sum(self.n, x.n))
         }
     }
 
@@ -342,6 +350,16 @@ impl Scm {
         unsafe {
             Scm::new(ffi::scm_geq_p(self.n, x.n)).is_true()
         }
+    }
+}
+
+pub fn shell(args: Vec<String>) {
+    let c_strings: Vec<CString> = args.iter().map(|s| s.to_c_str()).collect();
+    let ptrs = c_strings.iter().map(|cs| cs.as_ptr())
+        .chain(Some(ptr::null::<libc::c_char>()).move_iter())
+        .collect::<Vec<*const libc::c_char>>();
+    unsafe {
+        ffi::scm_shell(args.len() as u32, ptrs.as_ptr());
     }
 }
 
