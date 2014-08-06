@@ -6,7 +6,7 @@ extern crate libc;
 extern crate debug;
 
 use ffi::*;
-
+use std::mem;
 
 use std::num::Bounded;
 use std::c_str::CString;
@@ -363,6 +363,16 @@ pub fn shell(args: Vec<String>) {
     }
 }
 
+pub fn define_gsubr(name: String, req: int, opt: int, rst: int, fcn: fn() -> Scm) -> Scm {
+    unsafe {
+        fn fun() {
+            println!("bla");
+        }
+        Scm::new(ffi::scm_c_define_gsubr(name.to_c_str().as_ptr(),
+                                       req, opt, rst, mem::transmute(fun)))
+    }
+}
+
 pub fn init() {
     unsafe {
         ffi::scm_init_guile();
@@ -375,10 +385,23 @@ pub fn c_primitive_load(s: &str) {
     }
 }
 
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use super::ffi::*;
+
+    #[test]
+    fn testgsubr() {
+        fn fun() -> Scm {
+            1i32.to_scm()
+        }
+        let s = make_gsubr("bla".to_string(), 0, 0, fun);
+        let s = 1i32.to_scm();
+        println!("{:?}", s);
+        assert!(s.to_i32().unwrap() == 1i32);
+    }
 
     #[test]
     fn equal() {
@@ -390,10 +413,12 @@ mod tests {
     }
 
     #[test]
-    fn greater() {
+    fn inequal() {
         let a = 1i32.to_scm();
         let b = 2i32.to_scm();
         assert!(b > a);
+        assert!(a < b);
+        assert!(a != b);
     }
 
     #[test]

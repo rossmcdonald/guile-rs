@@ -71,4 +71,8 @@ extern {
 
     // arithmetic operations
     pub fn scm_sum(x: SCM, y: SCM) -> SCM;
+
+    // primitive procedures
+    pub fn scm_c_define_gsubr(name: *const c_char, req: int,
+                            opt: int, rst: int, fcn: *const c_void) -> SCM;
 }
