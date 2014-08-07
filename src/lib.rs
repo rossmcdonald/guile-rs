@@ -5,34 +5,34 @@
 extern crate libc;
 extern crate debug;
 
-use ffi::*;
+//use ffi::*;
+use ffi::Scm;
 use std::mem;
 
 use std::num::Bounded;
 use std::c_str::CString;
 use std::ptr;
 use std::ops::Fn;
+
 mod ffi;
 
-pub static SCM_T: Scm = Scm {
-    n: SCM {
-        n: N {
-            n: 1028
-        }
+pub static Scm_T: Scm = Scm {
+    n: ffi::N {
+        n: 1028
     }
 };
 
-pub static SCM_F: Scm = Scm {
-    n: SCM {
-        n: N {
-            n: 4
-        }
+pub static Scm_F: Scm = Scm {
+    n: ffi::N {
+        n: 4
     }
 };
 
-pub struct Scm {
-    n: ffi::SCM
-}
+pub static Scm_UNSPECIFIED: Scm = Scm {
+    n: ffi::N {
+        n: 2052
+    }
+};
 
 impl PartialEq for Scm {
     fn eq(&self, other: &Scm) -> bool {
@@ -85,7 +85,6 @@ impl ToPrimitive for Scm {
             None
         }
     }
-
     fn to_int(&self) -> Option<int> {
         if self.in_range::<int>() {
             unsafe {
@@ -104,6 +103,7 @@ impl ToPrimitive for Scm {
             None
         }
     }
+
     fn to_i16(&self) -> Option<i16> {
         if self.in_range::<i16>() {
             unsafe {
@@ -185,7 +185,7 @@ pub trait ToScm {
 impl ToScm for uint {
     fn to_scm(&self) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_from_uint32(*self as u32))
+            ffi::scm_from_uint32(*self as u32)
         }
     }
 }
@@ -193,7 +193,7 @@ impl ToScm for uint {
 impl ToScm for int {
     fn to_scm(&self) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_from_int32(*self as i32))
+            ffi::scm_from_int32(*self as i32)
         }
     }
 }
@@ -201,7 +201,7 @@ impl ToScm for int {
 impl ToScm for i8 {
     fn to_scm(&self) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_from_int8(*self))
+            ffi::scm_from_int8(*self)
         }
     }
 }
@@ -209,7 +209,7 @@ impl ToScm for i8 {
 impl ToScm for u8 {
     fn to_scm(&self) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_from_uint8(*self))
+            ffi::scm_from_uint8(*self)
         }
     }
 }
@@ -218,7 +218,7 @@ impl ToScm for u8 {
 impl ToScm for i16 {
     fn to_scm(&self) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_from_int16(*self))
+            ffi::scm_from_int16(*self)
         }
     }
 }
@@ -226,7 +226,7 @@ impl ToScm for i16 {
 impl ToScm for u16 {
     fn to_scm(&self) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_from_uint16(*self))
+            ffi::scm_from_uint16(*self)
         }
     }
 }
@@ -234,7 +234,7 @@ impl ToScm for u16 {
 impl ToScm for i32 {
     fn to_scm(&self) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_from_int32(*self))
+            ffi::scm_from_int32(*self)
         }
     }
 }
@@ -242,7 +242,7 @@ impl ToScm for i32 {
 impl ToScm for u32 {
     fn to_scm(&self) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_from_uint32(*self))
+            ffi::scm_from_uint32(*self)
         }
     }
 }
@@ -251,7 +251,7 @@ impl ToScm for u32 {
 impl ToScm for i64 {
     fn to_scm(&self) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_from_int64(*self))
+            ffi::scm_from_int64(*self)
         }
     }
 }
@@ -259,7 +259,7 @@ impl ToScm for i64 {
 impl ToScm for u64 {
     fn to_scm(&self) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_from_uint64(*self))
+            ffi::scm_from_uint64(*self)
         }
     }
 }
@@ -267,7 +267,7 @@ impl ToScm for u64 {
 impl ToScm for f32 {
     fn to_scm(&self) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_from_double(*self as f64))
+            ffi::scm_from_double(*self as f64)
         }
     }
 }
@@ -275,18 +275,12 @@ impl ToScm for f32 {
 impl ToScm for f64 {
     fn to_scm(&self) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_from_double(*self))
+            ffi::scm_from_double(*self)
         }
     }
 }
 
 impl Scm {
-    fn new(n: ffi::SCM) -> Scm{
-        Scm {
-            n: n
-        }
-    }
-
     fn in_range<T: Bounded+ToScm>(&self) -> bool {
         let min: T = Bounded::min_value();
         let max: T = Bounded::max_value();
@@ -296,31 +290,31 @@ impl Scm {
     pub fn is_true(&self) -> bool {
         let a: uint = 260;
         let b: uint = 4;
-        !((self.n.n.n & !(a ^ b)) == (a & b))
+        !((self.n.n & !(a ^ b)) == (a & b))
     }
 
     pub fn call(&self, args: Vec<Box<ToScm>>) -> Scm {
-        let mut s: Vec<SCM> = args.iter().map(|x| x.to_scm().n).collect();
+        let mut s: Vec<Scm> = args.iter().map(|x| x.to_scm()).collect();
         unsafe {
             let len = s.len();
-            Scm::new(ffi::scm_call_n(
-                self.n, s.as_mut_slice(), len as u64))
+            ffi::scm_call_n(
+                self.n, s.as_mut_slice(), len as u64)
         }
     }
     pub fn c_lookup(s: &str) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_c_lookup(s.to_c_str().as_ptr()))
+            ffi::scm_c_lookup(s.to_c_str().as_ptr())
         }
     }
     pub fn variable_ref(&self) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_variable_ref(self.n))
+            ffi::scm_variable_ref(self)
         }
     }
 
     pub fn add(&self, x: Scm) -> Scm {
         unsafe {
-            Scm::new(ffi::scm_sum(self.n, x.n))
+            ffi::scm_sum(self, x)
         }
     }
 
@@ -328,27 +322,27 @@ impl Scm {
 
     fn equal(&self, x: Scm) -> bool {
         unsafe {
-            Scm::new(ffi::scm_num_eq_p(self.n, x.n)).is_true()
+            ffi::scm_num_eq_p(self, x).is_true()
         }
     }
     fn less(&self, x: Scm) -> bool {
         unsafe {
-            Scm::new(ffi::scm_less_p(self.n, x.n)).is_true()
+            ffi::scm_less_p(self, x).is_true()
         }
     }
     fn greater(&self, x: Scm) -> bool {
         unsafe {
-            Scm::new(ffi::scm_gr_p(self.n, x.n)).is_true()
+            ffi::scm_gr_p(self, x).is_true()
         }
     }
     fn less_or_equal(&self, x: Scm) -> bool {
         unsafe {
-            Scm::new(ffi::scm_leq_p(self.n, x.n)).is_true()
+            ffi::scm_leq_p(self, x).is_true()
         }
     }
     fn greater_or_equal(&self, x: Scm) -> bool {
         unsafe {
-            Scm::new(ffi::scm_geq_p(self.n, x.n)).is_true()
+            ffi::scm_geq_p(self, x).is_true()
         }
     }
 }
@@ -363,13 +357,11 @@ pub fn shell(args: Vec<String>) {
     }
 }
 
-pub fn define_gsubr(name: String, req: int, opt: int, rst: int, fcn: fn() -> Scm) -> Scm {
+pub fn define_gsubr(name: String, req: int, opt: int,
+                    rst: int, fcn: fn(i: Scm) -> Box<ToScm>) -> Scm {
     unsafe {
-        fn fun() {
-            println!("bla");
-        }
-        Scm::new(ffi::scm_c_define_gsubr(name.to_c_str().as_ptr(),
-                                       req, opt, rst, mem::transmute(fun)))
+        ffi::scm_c_define_gsubr(name.to_c_str().as_ptr(),
+                                       req, opt, rst, fcn)
     }
 }
 
@@ -397,7 +389,7 @@ mod tests {
         fn fun() -> Scm {
             1i32.to_scm()
         }
-        let s = make_gsubr("bla".to_string(), 0, 0, fun);
+        let s = define_gsubr("bla".to_string(), 0, 0, 0, fun);
         let s = 1i32.to_scm();
         println!("{:?}", s);
         assert!(s.to_i32().unwrap() == 1i32);
@@ -423,11 +415,11 @@ mod tests {
 
     #[test]
     fn true_truth() {
-        assert!(SCM_T.is_true());
+        assert!(Scm_T.is_true());
     }
 
     #[test]
     fn false_falseness() {
-        assert!(!SCM_F.is_true());
+        assert!(!Scm_F.is_true());
     }
 }
