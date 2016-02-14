@@ -3,7 +3,6 @@
 #![feature(globs)]
 
 extern crate libc;
-extern crate debug;
 
 //use ffi::*;
 use ffi::Scm;
