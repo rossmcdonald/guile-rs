@@ -1,5 +1,7 @@
 [package]
-
 name = "guile"
 version = "0.0.1"
-authors = ["Martin Merfort"]
+authors = ["Martin Merfort", "Ross McDonald"]
+
+[dependencies]
+num = "0.1"

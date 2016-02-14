@@ -3,13 +3,14 @@
 #![feature(globs)]
 
 extern crate libc;
+extern crate num;
 
 //use ffi::*;
 use ffi::Scm;
 use std::mem;
 
-use std::num::Bounded;
-use std::c_str::CString;
+use num::Bounded;
+use std::ffi::CString;
 use std::ptr;
 use std::ops::Fn;
 
